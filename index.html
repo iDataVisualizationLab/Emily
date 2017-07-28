@@ -1,6 +1,19 @@
 <!DOCTYPE html>
-<svg width="960" height="500"></svg>
+
+<h1><center>Evolution of Gene-Discovery Through Mining of the Biomedical Literature</center></h1>
+
+<div class="ui-widget">
+  <label for="names">Gene Name: </label>
+  <input id="names" onchange="inputGene()">
+  <p id = "demo"></p>
+</div>
+
+
+<svg width="1200" height="600"></svg>
 <style> /* set the CSS */
+h1 {
+    font-size: 150%;
+}
 
 .line {
   fill: none;
@@ -18,19 +31,33 @@
   stroke-width: 0;
 }
 
+div.tooltip {
+  position: absolute;
+  text-align: center;
+  width: 60px;
+  height: 100px;
+  padding: 3px;
+  font: 12px sans-serif;
+  background: #aaa;
+  border: 1px;
+  border-radius: 5px;
+  pointer-events: none;
+}
 </style>
 
 <script src="https://d3js.org/d3.v4.min.js"></script>
 
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>jQuery UI Autocomplete - Default functionality</title>
+  <title>Gene Evolution</title>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <!--<link rel="stylesheet" href="/resources/demos/style.css">-->
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
+
 <script>
+
 
 var availableNames = [
   "CAMK2A",
@@ -45,6 +72,9 @@ var availableNames = [
   "APPL1"
 ];
 
+var div = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
 
 
 
@@ -243,7 +273,37 @@ function drawGeneGraph(n){
         //.attr("stroke-linejoin", "round")
         //.attr("stroke-linecap", "round")
         .attr("stroke-width", 2)
-        .attr("d", line);
+        .attr("d", line)
+        .on("mouseover",function(d){
+           for (var i=0; i<selectedGenes.length;i++){
+             d3.select(".line"+selectedGenes[i])
+               .transition().duration(500)
+               .style("stroke-width", 1);
+           }
+           d3.select(this)
+               .transition().duration(500)
+               .style("stroke-width", 6);
+
+            div.transition()
+              .duration(200)
+              .style("opacity", .9);
+            div.html("<b>"+this.className.baseVal.substring(4, this.className.baseVal.length) +"</b>" + "<br/>" + "I am here")
+              .style("left", (d3.event.pageX +20) + "px")
+              .style("top", (d3.event.pageY - 28) + "px");
+
+        })
+        .on("mouseout",function(d){
+           for (var i=0; i<selectedGenes.length;i++){
+             d3.select(".line"+selectedGenes[i])
+               .transition().duration(500)
+               .style("stroke-width", 2);
+           }
+           div.transition()
+             .duration(500)
+             .style("opacity", 0);
+
+        })
+        ;
 }
 
 // Function to remove an item from an array
@@ -295,7 +355,6 @@ function drawGeneLegend(){
                  }
            })
            .on("click",function(){
-              console.log("Emily clicked on "+this.innerHTML)
               removeItemFromArray(selectedGenes, this.innerHTML)
               d3.select(".lineLegend"+this.innerHTML).remove()
               d3.select(this).remove()
@@ -356,6 +415,9 @@ function inputGene(){
   if (availableNames.indexOf(x)<0){
     window.alert("Emily says: There is no "+ x +" in our database.")
   }
+  else if (selectedGenes.indexOf(x)>=0){
+    window.alert("Duplicated gene selection: "+x);
+  }
   else{
     selectedGenes.push(x);
 
@@ -381,9 +443,3 @@ function inputGene(){
 }
 
 </script>
-
-<div class="ui-widget">
-  <label for="names">Gene Name: </label>
-  <input id="names" onchange="inputGene()">
-  <p id = "demo"></p>
-</div>
